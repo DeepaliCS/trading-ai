@@ -98,3 +98,18 @@ def embed_account_trades(account_id: int, db: Session = Depends(get_db)):
     init_pgvector(db)
     count = embed_trades(db=db, account_id=account_id)
     return {"status": "ok", "trades_embedded": count}
+
+class SnapshotRename(BaseModel):
+    label: str
+
+@router.post("/snapshots/{snap_id}/rename")
+def rename_snapshot(snap_id: int, payload: SnapshotRename, db: Session = Depends(get_db)):
+    db.execute(text("UPDATE dashboard_growthplansnapshot SET label = :label WHERE id = :id"), {"label": payload.label, "id": snap_id})
+    db.commit()
+    return {"status": "ok"}
+
+@router.post("/snapshots/{snap_id}/delete")
+def delete_snapshot(snap_id: int, db: Session = Depends(get_db)):
+    db.execute(text("DELETE FROM dashboard_growthplansnapshot WHERE id = :id"), {"id": snap_id})
+    db.commit()
+    return {"status": "ok"}
